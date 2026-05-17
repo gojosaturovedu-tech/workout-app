@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="My Workout">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" id="themeColorMeta" content="#0a0a10">
+<meta name="description" content="Personal 6-day Push · Pull · Legs · Full Body · Cardio programme tracker">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>My Workout</title>
+<style>
+/* ===== THEME ===== */
+:root,[data-theme="dark"]{
+  --bg:#0a0a10;--bg2:#13131c;--bg3:#1c1c28;--bg4:#23233200;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --text:#eeeef8;--muted:rgba(238,238,248,0.48);--dim:rgba(238,238,248,0.22);
+  --input-bg:#1c1c28;--card-shadow:0 4px 24px rgba(0,0,0,0.5);
+  --glow-push:rgba(249,115,22,0.15);--glow-pull:rgba(34,211,165,0.15);
+  --glow-legs:rgba(167,139,250,0.15);--glow-full:rgba(56,189,248,0.15);
+  --glow-cardio:rgba(244,63,94,0.15);
+}
+[data-theme="light"]{
+  --bg:#f0f0f8;--bg2:#ffffff;--bg3:#e8e8f2;--bg4:#ffffff00;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#0d0d18;--muted:rgba(13,13,24,0.5);--dim:rgba(13,13,24,0.28);
+  --input-bg:#f0f0f8;--card-shadow:0 2px 10px rgba(0,0,0,0.08);
+  --glow-push:rgba(249,115,22,0.08);--glow-pull:rgba(34,211,165,0.08);
+  --glow-legs:rgba(167,139,250,0.08);--glow-full:rgba(56,189,248,0.08);
+  --glow-cardio:rgba(244,63,94,0.08);
+}
+:root{
+  --push:#f97316;--pull:#22d3a5;--legs:#a78bfa;
+  --full:#38bdf8;--cardio:#f43f5e;--rest:#64748b;--green:#22c55e;
+  --amber:#f59e0b;--nav-h:68px;
+  --safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px);
+  --font:'DM Sans','Segoe UI',system-ui,sans-serif;
+  --cond:'Barlow Condensed','Impact',Arial Narrow,sans-serif;
+}
+/* ===== RESET ===== */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);
+  display:flex;flex-direction:column;max-width:430px;margin:0 auto;
+  position:relative;transition:background .25s,color .25s;}
+button{font-family:var(--font);}
+input{font-family:var(--font);}
+
+/* ===== SCREENS ===== */
+.screen{display:none;flex:1;flex-direction:column;overflow:hidden;}
+.screen.active{display:flex;}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
+  padding-bottom:calc(var(--nav-h) + var(--safe-b) + 20px);}
+
+/* ===== TOPBAR ===== */
+.topbar{position:sticky;top:0;z-index:10;background:var(--bg);
+  border-bottom:1px solid var(--border);padding:10px 16px 10px;
+  padding-top:calc(10px + var(--safe-t));
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+.tb-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.tb-day{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+.tb-title{font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;line-height:1;letter-spacing:.01em;}
+.tb-badge{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  padding:4px 10px;border-radius:20px;flex-shrink:0;margin-top:2px;white-space:nowrap;}
+.tb-meta{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;}
+.chip{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);}
+
+/* ===== DAY SELECTOR ===== */
+.day-sel{display:flex;gap:6px;padding:10px 14px;overflow-x:auto;
+  border-bottom:1px solid var(--border);-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.day-sel::-webkit-scrollbar{display:none;}
+.dchip{flex-shrink:0;padding:5px 13px;border-radius:20px;border:1px solid var(--border);
+  background:var(--bg2);font-size:12px;font-weight:600;cursor:pointer;
+  color:var(--muted);white-space:nowrap;transition:all .15s;}
+.dchip.active{color:var(--text);border-color:var(--border2);background:var(--bg3);}
+
+/* ===== DURATION BAR ===== */
+.dur-row{display:flex;gap:8px;padding:12px 14px 0;}
+.dur-b{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 6px;text-align:center;}
+.dur-v{font-family:var(--cond);font-size:22px;font-weight:900;line-height:1;}
+.dur-l{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+
+/* ===== WARMUP ===== */
+.warmup{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  margin:12px 14px 0;font-size:13px;color:var(--muted);line-height:1.5;}
+.warmup strong{color:var(--text);font-weight:600;}
+.warmup-inner{flex:1;}
+.warmup-settings{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+.wsetting{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:10px;background:rgba(245,158,11,0.15);color:var(--amber);letter-spacing:.03em;}
+
+/* ===== EXERCISE CARDS ===== */
+.sec{padding:12px 14px 0;}
+.sec-lbl{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:8px;}
+.ex-list{display:flex;flex-direction:column;gap:10px;}
+.ex-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;
+  transition:box-shadow .2s;}
+.ex-card:active{box-shadow:var(--card-shadow);}
+.ex-accent{height:3px;width:100%;}
+.ex-hdr{display:flex;align-items:flex-start;justify-content:space-between;
+  padding:10px 12px 8px;border-bottom:1px solid var(--border);gap:8px;}
+.ex-name{font-size:14px;font-weight:700;line-height:1.2;}
+.ex-mach{font-size:11px;color:var(--dim);margin-top:2px;}
+.tip-btn{background:none;border:none;font-size:17px;cursor:pointer;padding:1px;
+  flex-shrink:0;opacity:0.5;transition:opacity .15s;}
+.tip-btn.open{opacity:1;}
+
+/* ===== SET BUTTONS ===== */
+.sets-row{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);}
+.sets-grp{display:flex;gap:6px;flex:1;flex-wrap:wrap;}
+.set-btn{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);
+  background:var(--bg3);color:var(--muted);font-size:12px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .18s;flex-shrink:0;}
+.set-btn.done{background:var(--green);border-color:var(--green);color:#fff;}
+.set-btn:active{transform:scale(.88);}
+.rest-tag{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;
+  flex-shrink:0;background:var(--bg3);padding:4px 8px;border-radius:6px;}
+
+/* ===== REC ROW ===== */
+.rec-row{display:flex;align-items:center;gap:6px;padding:6px 12px;
+  border-bottom:1px solid var(--border);background:rgba(245,158,11,0.05);flex-wrap:wrap;}
+.rec-label{font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);flex-shrink:0;}
+.rec-tags{display:flex;gap:4px;flex-wrap:wrap;}
+.rec-tag{font-size:10px;font-weight:600;color:var(--amber);opacity:.9;}
+
+/* ===== EX BOTTOM ===== */
+.ex-bot{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;gap:8px;}
+.reps-lbl{font-size:13px;font-weight:600;}
+.w-wrap{display:flex;align-items:center;gap:5px;}
+.w-input{width:64px;height:30px;background:var(--input-bg);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-size:13px;font-weight:600;
+  text-align:center;padding:0 4px;-webkit-appearance:none;appearance:none;}
+.w-input:focus{outline:none;border-color:var(--amber);}
+.w-unit{font-size:11px;color:var(--muted);}
+.w-saved{font-size:9px;color:var(--green);font-weight:600;}
+.w-kg{font-size:10px;color:var(--muted);white-space:nowrap;}
+.reps-input{width:42px;height:26px;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:6px;color:var(--text);font-size:13px;font-weight:700;
+  text-align:center;padding:0 2px;-webkit-appearance:none;appearance:none;
+  vertical-align:middle;cursor:text;}
+.reps-input:focus{outline:none;border-color:var(--amber);background:var(--input-bg);}
+.rest-input{width:38px;height:22px;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:5px;color:var(--text);font-size:11px;font-weight:700;
+  text-align:center;padding:0 2px;-webkit-appearance:none;appearance:none;
+  vertical-align:middle;cursor:text;}
+.rest-input:focus{outline:none;border-color:var(--amber);background:var(--input-bg);}
+.set-select{background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-size:13px;font-weight:600;padding:5px 10px;cursor:pointer;
+  -webkit-appearance:none;appearance:none;}
+.set-select option{background:var(--bg2);}
+.bw-kg-display{font-size:12px;color:var(--pull);font-weight:700;margin-top:4px;min-height:18px;}
+
+/* ===== FORM TIP ===== */
+.tip-body{padding:10px 12px;background:var(--bg3);border-top:1px solid var(--border);
+  font-size:12px;color:var(--muted);line-height:1.7;display:none;}
+.tip-body.open{display:block;}
+
+/* ===== CARDIO ===== */
+.cardio-card{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;
+  border-radius:14px;border:1px solid;margin:12px 14px 0;}
+.cardio-ic{font-size:22px;flex-shrink:0;}
+.cardio-content{flex:1;}
+.cardio-lbl{font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--dim);margin-bottom:3px;}
+.cardio-txt{font-size:13px;color:var(--muted);line-height:1.5;}
+.cardio-settings{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
+.csetting{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;
+  padding:2px 8px;border-radius:10px;background:rgba(245,158,11,0.15);color:var(--amber);}
+
+/* ===== COMPLETE BTN ===== */
+.comp-btn{display:block;width:calc(100% - 28px);margin:12px 14px 0;
+  padding:14px;border-radius:14px;border:none;
+  font-size:14px;font-weight:700;letter-spacing:.04em;
+  cursor:pointer;transition:all .18s;}
+.comp-btn:active{transform:scale(.98);}
+.comp-done{background:var(--bg3);color:var(--dim);cursor:default;}
+
+/* ===== REST DAY ===== */
+.rest-view{padding:28px 18px 20px;text-align:center;}
+.rest-emoji{font-size:52px;margin-bottom:14px;}
+.rest-title{font-family:var(--cond);font-size:32px;font-weight:900;text-transform:uppercase;margin-bottom:8px;letter-spacing:.02em;}
+.rest-intro{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:18px;}
+.rest-tip{display:flex;gap:10px;padding:12px 0;border-top:1px solid var(--border);
+  font-size:13px;color:var(--muted);text-align:left;line-height:1.55;}
+.rest-arr{font-weight:700;color:var(--rest);flex-shrink:0;}
+
+/* ===== REST TIMER ===== */
+.timer-bar{position:fixed;bottom:calc(var(--nav-h) + var(--safe-b));
+  left:50%;transform:translateX(-50%);
+  width:100%;max-width:430px;background:var(--bg2);
+  border-top:1px solid var(--border);padding:10px 14px;
+  display:none;z-index:200;align-items:center;gap:10px;
+  box-shadow:0 -6px 24px rgba(0,0,0,.4);}
+.timer-bar.on{display:flex;}
+.timer-ic{font-size:18px;flex-shrink:0;}
+.timer-lbl{font-size:10px;color:var(--muted);}
+.timer-num{font-family:var(--cond);font-size:24px;font-weight:900;line-height:1;min-width:38px;}
+.timer-track{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.timer-fill{height:100%;background:var(--green);border-radius:2px;transition:width .1s linear;}
+.timer-skip{background:none;border:1px solid var(--border);border-radius:8px;
+  padding:4px 10px;font-size:12px;color:var(--muted);cursor:pointer;flex-shrink:0;}
+
+/* ===== HOME SCREEN ===== */
+.home-hdr{padding:calc(16px + var(--safe-t)) 18px 16px;border-bottom:1px solid var(--border);}
+.home-greet{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;font-weight:600;}
+.home-ttl{font-family:var(--cond);font-size:26px;font-weight:900;text-transform:uppercase;letter-spacing:.02em;}
+.stat-row{display:flex;gap:8px;padding:12px 14px;}
+.stat-card{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:12px 8px;text-align:center;}
+.stat-v{font-family:var(--cond);font-size:30px;font-weight:900;line-height:1;}
+.stat-l{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;margin-top:3px;}
+.today-card{margin:0 14px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.tc-hdr{padding:14px 14px 10px;border-bottom:1px solid var(--border);}
+.tc-eye{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.tc-title{font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;line-height:1;letter-spacing:.02em;}
+.tc-sub{font-size:12px;color:var(--muted);margin-top:4px;}
+.tc-time{font-size:11px;color:var(--muted);margin-top:5px;}
+.prog-row{padding:12px 14px;border-bottom:1px solid var(--border);}
+.prog-lr{display:flex;justify-content:space-between;margin-bottom:6px;}
+.prog-lbl{font-size:11px;color:var(--muted);}
+.prog-cnt{font-size:11px;font-weight:600;}
+.prog-bg{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--green);border-radius:3px;transition:width .4s ease;}
+.go-btn{display:block;width:calc(100% - 28px);margin:12px 14px;padding:13px;
+  border-radius:12px;border:none;font-size:14px;font-weight:700;
+  cursor:pointer;transition:all .18s;color:#fff;letter-spacing:.04em;}
+.go-btn:active{transform:scale(.98);}
+
+/* ===== PROGRESS SCREEN ===== */
+.prog-hdr{padding:calc(16px + var(--safe-t)) 18px 12px;border-bottom:1px solid var(--border);}
+.prog-hdr-ttl{font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:.02em;}
+.bw-row{display:flex;gap:8px;padding:12px 14px;align-items:flex-end;}
+.bw-grp{flex:1;}
+.bw-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:5px;}
+.bw-in{width:100%;height:44px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:12px;color:var(--text);font-size:18px;font-weight:700;
+  text-align:center;padding:0 12px;-webkit-appearance:none;appearance:none;}
+.bw-in:focus{outline:none;border-color:var(--pull);}
+.bw-save{height:44px;padding:0 18px;background:var(--pull);border:none;
+  border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;}
+.bw-save:active{opacity:.8;}
+.chart-box{margin:0 14px 14px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:14px;padding:12px;min-height:110px;}
+.chart-empty{text-align:center;padding:20px;font-size:13px;color:var(--dim);}
+
+/* ===== CALENDAR ===== */
+.cal-box{margin:0 14px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px;}
+.cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.cal-month{font-size:14px;font-weight:700;}
+.cal-streak{font-size:12px;color:var(--muted);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-dh{font-size:9px;font-weight:700;text-align:center;color:var(--dim);text-transform:uppercase;padding:2px 0;}
+.cal-d{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:600;color:var(--muted);}
+.cal-d.done{background:rgba(34,197,94,0.16);color:var(--green);}
+.cal-d.rday{background:var(--bg3);color:var(--dim);}
+.cal-d.today{outline:2px solid var(--text);outline-offset:-2px;color:var(--text);}
+
+/* ===== TIPS ===== */
+.tip-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;}
+.tip-t{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.tip-b{font-size:12px;color:var(--muted);line-height:1.7;}
+
+/* ===== SETTINGS ===== */
+.set-hdr{padding:calc(16px + var(--safe-t)) 18px 12px;border-bottom:1px solid var(--border);}
+.set-hdr-ttl{font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:.02em;}
+.set-section-label{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--dim);padding:16px 18px 6px;}
+.set-row{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--border);}
+.set-lbl{font-size:15px;font-weight:600;}
+.set-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.tog{width:48px;height:28px;border-radius:14px;background:var(--bg3);
+  border:1px solid var(--border);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.tog.on{background:var(--green);border-color:var(--green);}
+.tog-k{position:absolute;top:3px;left:3px;width:20px;height:20px;
+  border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 5px rgba(0,0,0,.3);}
+.tog.on .tog-k{left:24px;}
+.danger{background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.2);
+  color:var(--cardio);border-radius:12px;padding:13px 18px;font-size:14px;
+  font-weight:600;cursor:pointer;margin:4px 18px 0;display:block;width:calc(100% - 36px);text-align:center;}
+
+/* ===== APKMINT GUIDE ===== */
+.apk-card{margin:12px 14px;background:var(--bg2);border:1px solid var(--border2);border-radius:16px;overflow:hidden;}
+.apk-hdr{padding:14px 16px 12px;border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,rgba(56,189,248,.1),rgba(167,139,250,.1));}
+.apk-hdr-title{font-family:var(--cond);font-size:20px;font-weight:900;text-transform:uppercase;letter-spacing:.02em;}
+.apk-hdr-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+.apk-body{padding:14px 16px;}
+.apk-step{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.apk-step:last-child{border-bottom:none;}
+.apk-num{width:22px;height:22px;border-radius:50%;background:var(--full);color:#fff;
+  font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.apk-step-content{flex:1;}
+.apk-step-title{font-size:13px;font-weight:700;margin-bottom:3px;}
+.apk-step-text{font-size:12px;color:var(--muted);line-height:1.6;}
+.apk-code{display:block;background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:7px 10px;font-family:'Courier New',monospace;font-size:11px;color:var(--full);
+  margin-top:5px;word-break:break-all;line-height:1.5;}
+.apk-note{margin:10px 0 0;padding:10px 12px;background:rgba(245,158,11,0.1);
+  border:1px solid rgba(245,158,11,0.2);border-radius:10px;font-size:11px;color:var(--amber);line-height:1.6;}
+
+/* ===== BOTTOM NAV ===== */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:430px;
+  height:calc(var(--nav-h) + var(--safe-b));padding-bottom:var(--safe-b);
+  background:var(--bg2);border-top:1px solid var(--border);
+  display:flex;align-items:stretch;z-index:100;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;background:none;border:none;
+  cursor:pointer;color:var(--dim);transition:color .15s;padding:0;}
+.nb.active{color:var(--text);}
+.nb-ic{font-size:21px;line-height:1;}
+.nb-lbl{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;}
+
+/* ===== COLOR HELPERS ===== */
+.c-push{color:var(--push);}.c-pull{color:var(--pull);}.c-legs{color:var(--legs);}
+.c-full{color:var(--full);}.c-cardio{color:var(--cardio);}.c-rest{color:var(--rest);}
+.c-green{color:var(--green);}
+.bg-push{background:rgba(249,115,22,.12);color:var(--push);}
+.bg-pull{background:rgba(34,211,165,.12);color:var(--pull);}
+.bg-legs{background:rgba(167,139,250,.12);color:var(--legs);}
+.bg-full{background:rgba(56,189,248,.12);color:var(--full);}
+.bg-cardio{background:rgba(244,63,94,.12);color:var(--cardio);}
+.bg-rest{background:rgba(100,116,139,.12);color:var(--rest);}
+</style>
+</head>
+<body>
+
+<!-- HOME SCREEN -->
+<div class="screen active" id="screen-home">
+  <div class="scroll">
+    <div class="home-hdr">
+      <div class="home-greet" id="homeGreet">Good morning</div>
+      <div class="home-ttl" id="homeTtl">Today's session</div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-v c-push" id="sStreak">0</div><div class="stat-l">Day streak 🔥</div></div>
+      <div class="stat-card"><div class="stat-v c-pull" id="sWeek">0/6</div><div class="stat-l">This week ✅</div></div>
+      <div class="stat-card"><div class="stat-v c-legs" id="sBW">—</div><div class="stat-l">Body kg ⚖️</div></div>
+    </div>
+    <div class="today-card" id="todayCard"></div>
+    <div style="height:10px;"></div>
+  </div>
+</div>
+
+<!-- WORKOUT SCREEN -->
+<div class="screen" id="screen-workout">
+  <div class="day-sel" id="daySel"></div>
+  <div class="scroll" id="wkScroll">
+    <div id="wkContent"></div>
+  </div>
+</div>
+
+<!-- PROGRESS SCREEN -->
+<div class="screen" id="screen-progress">
+  <div class="scroll">
+    <div class="prog-hdr">
+      <div class="prog-hdr-ttl">Progress</div>
+    </div>
+    <div style="padding:12px 14px 0;"><div class="sec-lbl">Body weight log ⚖️</div></div>
+    <div class="bw-row">
+      <div class="bw-grp">
+        <div class="bw-lbl">Enter today's weight (kg)</div>
+        <input type="number" class="bw-in" id="bwIn" placeholder="96.4" step="0.1" min="30" max="300">
+      </div>
+      <button class="bw-save" onclick="saveBodyWeight()">Save</button>
+    </div>
+    <div class="chart-box" id="bwChart"><div class="chart-empty">Log your weight above to see your progress chart 📈</div></div>
+    <div style="padding:0 14px 6px;"><div class="sec-lbl">Workout calendar 📅</div></div>
+    <div class="cal-box">
+      <div class="cal-hdr">
+        <div class="cal-month" id="calMonth"></div>
+        <div class="cal-streak" id="calStreak"></div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+    <div style="padding:0 14px 6px;"><div class="sec-lbl">Key reminders</div></div>
+    <div style="padding:0 14px 4px;" id="tipsList"></div>
+  </div>
+</div>
+
+<!-- SETTINGS SCREEN -->
+<div class="screen" id="screen-settings">
+  <div class="scroll">
+    <div class="set-hdr"><div class="set-hdr-ttl">Settings</div></div>
+
+    <div class="set-section-label">Appearance</div>
+    <div class="set-row">
+      <div><div class="set-lbl">Light mode</div><div class="set-sub">Bright theme for outdoor use ☀️</div></div>
+      <button class="tog" id="togTheme" onclick="toggleTheme()"><div class="tog-k"></div></button>
+    </div>
+    <div class="set-row">
+      <div><div class="set-lbl">Vibrate on timer end</div><div class="set-sub">Phone vibrates when rest is over</div></div>
+      <button class="tog on" id="togVib" onclick="toggleVibrate()"><div class="tog-k"></div></button>
+    </div>
+
+    <div class="set-section-label">Your programme</div>
+    <div style="padding:6px 18px 2px;font-size:12px;color:var(--muted);line-height:1.6;">
+      💡 <strong>Tip:</strong> Tap the reps number or rest timer on any exercise card in the Workout screen to edit them directly.
+    </div>
+    <div class="set-row">
+      <div><div class="set-lbl">Starting weight</div><div class="set-sub">Baseline: May 2025</div></div>
+      <div style="font-size:14px;font-weight:700;color:var(--muted);">96.4 kg</div>
+    </div>
+    <div class="set-row">
+      <div><div class="set-lbl">Target weight</div><div class="set-sub">Goal by October 2025</div></div>
+      <div style="font-size:14px;font-weight:700;color:var(--green);">80 kg</div>
+    </div>
+
+
+    <div class="set-section-label">📱 Convert to Android APK</div>
+    <div class="apk-card">
+      <div class="apk-hdr">
+        <div class="apk-hdr-title">📦 AppMint APK Guide</div>
+        <div class="apk-hdr-sub">Turn this app into a real Android APK in minutes</div>
+      </div>
+      <div class="apk-body">
+        <div class="apk-step">
+          <div class="apk-num">1</div>
+          <div class="apk-step-content">
+            <div class="apk-step-title">Host this HTML file online</div>
+            <div class="apk-step-text">Upload <strong>index.html</strong> to a free host. Recommended options:<br>
+            • <strong>GitHub Pages ✅ Recommended</strong> — most reliable for APK wrapping, no URL errors. Create a free account at github.com, make a new repository, upload the file as <em>index.html</em>, go to Settings → Pages → select main branch → Save.<br>
+            • <strong>Vercel</strong> — also reliable. Go to vercel.com, drag-and-drop the file, get instant URL.<br>
+            • <strong>Netlify ⚠️ Avoid for APK</strong> — can show "URL damaged" errors inside APKs due to how Netlify handles its redirect rules. Use GitHub Pages instead.<br>
+            Your app URL will look like: <code class="apk-code">https://yourusername.github.io/my-workout/</code>
+            </div>
+          </div>
+        </div>
+        <div class="apk-step">
+          <div class="apk-num">2</div>
+          <div class="apk-step-content">
+            <div class="apk-step-title">Go to AppMint</div>
+            <div class="apk-step-text">Open your browser and go to:<br>
+            <code class="apk-code">https://appmint.com</code>
+            Click <strong>"Create App"</strong> or <strong>"Convert Website to APK"</strong>.</div>
+          </div>
+        </div>
+        <div class="apk-step">
+          <div class="apk-num">3</div>
+          <div class="apk-step-content">
+            <div class="apk-step-title">Fill in these exact details</div>
+            <div class="apk-step-text">
+              Use these settings — <strong>no password needed</strong>:<br><br>
+              <strong>App Name:</strong><code class="apk-code">My Workout</code>
+              <strong>Website URL:</strong><code class="apk-code">[your hosted URL from step 1]</code>
+              <strong>Package Name:</strong><code class="apk-code">com.myworkout.tracker</code>
+              <strong>Version Name:</strong><code class="apk-code">1.0.0</code>
+              <strong>Version Code:</strong><code class="apk-code">1</code>
+              <strong>App Icon:</strong><code class="apk-code">Upload a 512×512 PNG (use 💪 emoji or your own icon)</code>
+              <strong>Orientation:</strong><code class="apk-code">Portrait</code>
+              <strong>Fullscreen:</strong><code class="apk-code">Yes (hides status bar for app feel)</code>
+              <strong>Password:</strong><code class="apk-code">Leave blank — no password</code>
+            </div>
+          </div>
+        </div>
+        <div class="apk-step">
+          <div class="apk-num">4</div>
+          <div class="apk-step-content">
+            <div class="apk-step-title">Build &amp; Download</div>
+            <div class="apk-step-text">Click <strong>Build APK</strong>. AppMint will generate your APK file (usually 1–2 minutes). Download the <strong>.apk</strong> file to your phone or PC.</div>
+          </div>
+        </div>
+        <div class="apk-step">
+          <div class="apk-num">5</div>
+          <div class="apk-step-content">
+            <div class="apk-step-title">Install on your Android phone</div>
+            <div class="apk-step-text">
+              • Transfer the APK to your phone (WhatsApp, email, or USB cable).<br>
+              • Open it — Android will ask to <strong>allow unknown sources</strong>.<br>
+              • Go to <em>Settings → Security → Install unknown apps</em> and allow your file manager or browser.<br>
+              • Tap <strong>Install</strong>. Done — the app appears on your home screen!
+            </div>
+          </div>
+        </div>
+        <div class="apk-note">
+          💡 <strong>Tip:</strong> Use <strong>GitHub Pages</strong> as your host — it is the most reliable with AppMint APKs and never shows "URL damaged" errors. Your phone needs internet the first time it opens; after that the page loads from the WebView cache automatically.
+        </div>
+      </div>
+    </div>
+
+    <div class="set-section-label">Danger zone</div>
+    <button class="danger" onclick="clearData()">🗑 Clear all saved data</button>
+    <div style="padding:20px 18px;text-align:center;font-size:12px;color:var(--dim);line-height:1.8;">
+      My Workout App · v1.0.0<br>Push · Pull · Legs · Full Body · Cardio · Rest<br>Built for your 6-day programme
+    </div>
+  </div>
+</div>
+
+<!-- REST TIMER BAR -->
+<div class="timer-bar" id="timerBar">
+  <span class="timer-ic">⏱</span>
+  <div><div class="timer-lbl">Rest time</div><div class="timer-num" id="timerNum">1:15</div></div>
+  <div class="timer-track"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
+  <button class="timer-skip" onclick="skipTimer()">Skip ›</button>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bnav">
+  <button class="nb active" id="nb-home" onclick="showScreen('home')">
+    <span class="nb-ic">🏠</span><span class="nb-lbl">Home</span>
+  </button>
+  <button class="nb" id="nb-workout" onclick="showScreen('workout')">
+    <span class="nb-ic">💪</span><span class="nb-lbl">Workout</span>
+  </button>
+  <button class="nb" id="nb-progress" onclick="showScreen('progress')">
+    <span class="nb-ic">📊</span><span class="nb-lbl">Progress</span>
+  </button>
+  <button class="nb" id="nb-settings" onclick="showScreen('settings')">
+    <span class="nb-ic">⚙️</span><span class="nb-lbl">Settings</span>
+  </button>
+</nav>
+
+<script>
+// ============================================================
+// WORKOUT DATA  —  rec = recommended settings (beginner, ~96 kg)
+// ============================================================
+const WK = {
+  mon:{title:'Push Day',color:'push',subtitle:'Chest · Shoulders · Triceps',
+    time:'2:30 pm – 4:15 pm',dur:'~1 hr 45 min',
+    warmup:'10 min treadmill brisk walk',
+    warmupSettings:['🏃 5–6 km/h','📐 Incline 1–2%','⏱ 10 min'],
+    exercises:[
+      {id:'mon1',name:'Chest press',mach:'Chest press machine',sets:4,reps:'12',rest:75,
+       rec:['🏋️ Start 65–90 lbs (30–40 kg)','📈 Add 5 lbs / 1–2 wks'],
+       tip:'Keep back flat on the pad. Push through your chest, not shoulders. Lower slowly — 2 seconds down. Don\'t let the weight snap back.'},
+      {id:'mon2',name:'Fly',mach:'Fly machine',sets:3,reps:'12',rest:60,
+       rec:['🏋️ Start 45–65 lbs (20–30 kg)','📈 Add 5 lbs / 1–2 wks'],
+       tip:'Slight bend in elbows throughout. Feel the stretch across your chest at the open position. Stop when comfortable — don\'t force it too wide.'},
+      {id:'mon3',name:'Overhead press',mach:'Overhead press machine',sets:4,reps:'10',rest:90,
+       rec:['🏋️ Start 55–75 lbs (25–35 kg)','📈 Add 5 lbs / 2 wks'],
+       tip:'Press straight up. Don\'t flare elbows out too wide. Squeeze at the top but don\'t lock. This is your heaviest push movement — take the full 90s rest.'},
+      {id:'mon4',name:'Dumbbell bench press',mach:'Dumbbells + flat bench',sets:3,reps:'10',rest:75,
+       rec:['🏋️ 25–35 lbs (12–16 kg) each dumbbell','📈 +5 lbs / 1–2 wks'],
+       tip:'Lie flat, feet on the floor. Lower to chest level with control. Press up and slightly inward — dumbbells nearly touch at the top.'},
+      {id:'mon5',name:'Arm extension (triceps)',mach:'Arm extension machine',sets:3,reps:'12',rest:60,
+       rec:['🏋️ Start 45–65 lbs (20–30 kg)','📈 Add 5 lbs / 1–2 wks'],
+       tip:'Upper arms stay completely still — only forearms move. Fully extend at the bottom and squeeze your triceps. No swinging or momentum.'},
+      {id:'mon6',name:'Ab crunch',mach:'Ab crunch machine',sets:3,reps:'15',rest:45,
+       rec:['🏋️ Start 65–100 lbs (30–45 kg)','📈 Add 10 lbs / 2 wks'],
+       tip:'Crunch from your core, not your neck. Exhale as you crunch down. Hold 1 second at the bottom before releasing slowly.'},
+    ],
+    cardio:{ic:'🚴',txt:'20 min cycle · moderate resistance · heart rate 60–70% max',
+      settings:['⚙️ Level 6–8','🔄 70–80 RPM','⏱ 20 min']}},
+
+  tue:{title:'Pull Day',color:'pull',subtitle:'Back · Biceps · Core',
+    time:'2:15 pm – 4:45 pm',dur:'~1 hr 30 min',warn:'⚠️ Tuition at 5:00 pm',
+    warmup:'10 min easy cycle to warm up your back and arms',
+    warmupSettings:['⚙️ Level 4–5','🔄 60–70 RPM','⏱ 10 min'],
+    exercises:[
+      {id:'tue1',name:'Lat pulldown',mach:'Lat pulldown machine',sets:4,reps:'12',rest:75,
+       rec:['🏋️ Start 75–110 lbs (35–50 kg)','📈 Add 5 lbs / 1–2 wks'],
+       tip:'Pull to your upper chest — never behind your neck. Lean back slightly. Squeeze shoulder blades down and together at the bottom of each rep.'},
+      {id:'tue2',name:'Seated row',mach:'Row machine',sets:4,reps:'12',rest:75,
+       rec:['🏋️ Start 75–110 lbs (35–50 kg)','📈 Add 5 lbs / 1–2 wks'],
+       tip:'Sit tall, chest up. Pull to your lower chest/upper stomach. Squeeze your back at the peak. Don\'t round your shoulders forward at any point.'},
+      {id:'tue3',name:'Assisted chin-up',mach:'Assisted chin/dip machine',sets:3,reps:'8–10',rest:90,
+       rec:['🏋️ Counterweight 90–120 lbs (40–55 kg)','📈 Reduce 10 lbs / 2 wks'],
+       tip:'More machine weight = easier (it counterbalances you). Start heavy, reduce assistance each week. Pull chin above bar, lower very slowly.'},
+      {id:'tue4',name:'Arm curl (biceps)',mach:'Arm curl machine',sets:3,reps:'12',rest:60,
+       rec:['🏋️ Start 45–65 lbs (20–30 kg)','📈 Add 5 lbs / 1–2 wks'],
+       tip:'Keep upper arms pinned to the pad. Full range of motion — all the way up and all the way down. Squeeze hard at the top of each rep.'},
+      {id:'tue5',name:'Dumbbell bicep curl',mach:'Dumbbells',sets:3,reps:'10',rest:60,
+       rec:['🏋️ 18–26 lbs (8–12 kg) each dumbbell','📈 +5 lbs / 1–2 wks'],
+       tip:'Stand tall, feet shoulder-width. Curl one at a time. Twist wrist slightly outward as you curl up (supination). Don\'t swing your body.'},
+      {id:'tue6',name:'Ab crunch',mach:'Ab crunch machine',sets:3,reps:'15',rest:45,
+       rec:['🏋️ Start 65–100 lbs (30–45 kg)','📈 Add 10 lbs / 2 wks'],
+       tip:'Crunch from your core, not your neck. Exhale as you crunch down. Hold 1 second at the bottom before releasing slowly.'},
+    ],
+    cardio:{ic:'🚴',txt:'15 min cycle · moderate effort · leave by 4:45 pm for tuition',
+      settings:['⚙️ Level 5–7','🔄 65–75 RPM','⏱ 15 min']}},
+
+  wed:{title:'Leg Day',color:'legs',subtitle:'Quads · Hamstrings · Glutes · Core',
+    time:'2:30 pm – 4:15 pm',dur:'~1 hr 45 min',
+    warmup:'10 min treadmill — brisk walk then light jog, loosen hips and knees',
+    warmupSettings:['🏃 Walk 5 km/h → Jog 7 km/h','📐 Incline 0%','⏱ 10 min'],
+    exercises:[
+      {id:'wed1',name:'Leg press',mach:'Leg press machine',sets:4,reps:'12',rest:90,
+       rec:['🏋️ Start 130–200 lbs (60–90 kg)','📈 Add 10 lbs / 1–2 wks'],
+       tip:'Feet shoulder-width, mid-platform. Don\'t lock knees at the top. Lower slowly — 2 to 3 seconds down. Your biggest calorie-burning exercise.'},
+      {id:'wed2',name:'Leg extension',mach:'Leg extension machine',sets:3,reps:'12',rest:60,
+       rec:['🏋️ Start 65–100 lbs (30–45 kg)','📈 Add 10 lbs / 1–2 wks'],
+       tip:'Squeeze quads hard at the top of each rep. Hold 1 second. Lower with control — don\'t let the weight snap back down.'},
+      {id:'wed3',name:'Seated leg curl',mach:'Seated leg curl machine',sets:3,reps:'12',rest:60,
+       rec:['🏋️ Start 55–90 lbs (25–40 kg)','📈 Add 5 lbs / 1–2 wks'],
+       tip:'Curl all the way to the end of your range. Hold briefly at the bottom. Lower slowly — the negative phase builds as much muscle as the curl.'},
+      {id:'wed4',name:'Hip abduction',mach:'Hip abduction machine',sets:3,reps:'15',rest:45,
+       rec:['🏋️ Start 65–100 lbs (30–45 kg)','📈 Add 10 lbs / 2 wks'],
+       tip:'Sit tall, core engaged. Push legs out as far as comfortable. Hold 1 second at full extension. Control the return — don\'t let it slam shut.'},
+      {id:'wed5',name:'Rotary torso',mach:'Rotary torso machine',sets:3,reps:'15/side',rest:45,
+       rec:['🏋️ Start 45–75 lbs (20–35 kg)','📈 Add 10 lbs / 2 wks'],
+       tip:'Rotate from your core — don\'t use your arms to force it. Keep hips still throughout. Complete all reps on one side before switching.'},
+      {id:'wed6',name:'Ab crunch',mach:'Ab crunch machine',sets:4,reps:'20',rest:45,
+       rec:['🏋️ Start 65–100 lbs (30–45 kg)','📈 Add 10 lbs / 2 wks'],
+       tip:'Crunch from your core, not your neck. Exhale as you crunch down. Hold 1 second at the bottom before releasing slowly.'},
+    ],
+    cardio:{ic:'🏃',txt:'20 min treadmill · 2 min walk then 1 min jog, repeat',
+      settings:['🚶 Walk 4.5 km/h','🏃 Jog 7–8 km/h','📐 Incline 0–1%','⏱ 20 min']}},
+
+  thu:{title:'Rest Day',color:'rest',isRest:true,subtitle:'Active recovery',
+    time:'Tuition 2:00 pm – 4:30 pm',
+    tips:['Light 10 min walk after school — keeps blood flowing without stressing muscles',
+      'Stretch 15 min in the evening — focus on legs and back after Wednesday leg day',
+      'Eat a protein-rich dinner — chicken, eggs, fish, or beans',
+      'Sleep 8–9 hours — growth hormone releases during deep sleep',
+      'Rest days are not wasted days — they are growth days']},
+
+  fri:{title:'Full Body',color:'full',subtitle:'All muscle groups',
+    time:'4:30 pm – 6:15 pm',dur:'~1 hr 45 min',
+    warmup:'8 min treadmill brisk walk — wake up the whole body',
+    warmupSettings:['🏃 5–6 km/h','📐 Incline 1%','⏱ 8 min'],
+    exercises:[
+      {id:'fri1',name:'Chest press',mach:'Chest press machine',sets:3,reps:'10',rest:60,
+       rec:['🏋️ 75–100 lbs (35–45 kg)','📈 Same week as Monday'],
+       tip:'Keep back flat. Push through your chest. Lower slowly — 2 seconds down. Don\'t rush this.'},
+      {id:'fri2',name:'Lat pulldown',mach:'Lat pulldown machine',sets:3,reps:'10',rest:60,
+       rec:['🏋️ 90–120 lbs (40–55 kg)','📈 Same week as Tuesday'],
+       tip:'Pull to upper chest. Lean back slightly. Squeeze shoulder blades down and together at the bottom.'},
+      {id:'fri3',name:'Leg press',mach:'Leg press machine',sets:3,reps:'12',rest:90,
+       rec:['🏋️ 145–210 lbs (65–95 kg)','📈 Same week as Wednesday'],
+       tip:'Feet shoulder-width, mid-platform. Don\'t lock knees. Lower slowly. Take the full 90s rest.'},
+      {id:'fri4',name:'Overhead press',mach:'Overhead press machine',sets:3,reps:'10',rest:60,
+       rec:['🏋️ 60–85 lbs (28–38 kg)','📈 Same week as Monday'],
+       tip:'Press straight up. Don\'t flare elbows too wide. Squeeze at the top but don\'t lock out.'},
+      {id:'fri5',name:'Seated row',mach:'Row machine',sets:3,reps:'10',rest:60,
+       rec:['🏋️ 85–115 lbs (38–52 kg)','📈 Same week as Tuesday'],
+       tip:'Sit tall, chest up. Pull to lower chest. Squeeze back at peak. Don\'t round your shoulders.'},
+      {id:'fri6',name:'Arm curl (biceps)',mach:'Arm curl machine',sets:2,reps:'12',rest:45,
+       rec:['🏋️ 50–70 lbs (22–32 kg)','📈 Same week as Tuesday'],
+       tip:'Keep upper arms pinned. Full range of motion. Squeeze at the top of each rep.'},
+      {id:'fri7',name:'Arm extension (triceps)',mach:'Arm extension machine',sets:2,reps:'12',rest:45,
+       rec:['🏋️ 50–70 lbs (22–32 kg)','📈 Same week as Monday'],
+       tip:'Upper arms still — only forearms move. Fully extend and squeeze triceps. No swinging.'},
+      {id:'fri8',name:'Ab crunch',mach:'Ab crunch machine',sets:3,reps:'15',rest:45,
+       rec:['🏋️ 75–110 lbs (35–50 kg)','📈 Add 10 lbs / 2 wks'],
+       tip:'Crunch from your core, not your neck. Exhale down. Hold 1 second at the bottom.'},
+    ],
+    cardio:{ic:'🚴',txt:'20 min cycle · steady moderate pace · end the week strong',
+      settings:['⚙️ Level 7–9','🔄 70–80 RPM','⏱ 20 min']}},
+
+  sat:{title:'Cardio + Core',color:'cardio',subtitle:'High calorie burn',
+    time:'8:00 am – 11:30 am',dur:'~1 hr 45 min',warn:'⚠️ 2nd tuition at 12:00 pm',
+    warmup:'5 min easy walk — body already active after morning tuition',
+    warmupSettings:['🏃 4–5 km/h','📐 Incline 0%','⏱ 5 min'],
+    exercises:[
+      {id:'sat1',name:'Treadmill intervals',mach:'2 min walk → 1 min jog, repeat',sets:1,reps:'30 min',rest:0,
+       rec:['🚶 Walk 4.5–5 km/h','🏃 Jog 7–9 km/h','📐 Incline 0–1%'],
+       tip:'The 2-walk/1-jog pattern burns more fat than steady jogging when starting out. As fitness improves, extend the jog intervals each week.'},
+      {id:'sat2',name:'Cycle steady-state',mach:'Cycle machine · moderate pace',sets:1,reps:'20 min',rest:0,
+       rec:['⚙️ Level 7–9','🔄 70–80 RPM','⏱ 20 min'],
+       tip:'Keep a pace where you can talk but feel your heart working. Don\'t go too easy — if you can read your phone comfortably, go harder.'},
+      {id:'sat3',name:'Ab crunch',mach:'Ab crunch machine',sets:4,reps:'20',rest:45,
+       rec:['🏋️ 75–110 lbs (35–50 kg)','📈 Add 10 lbs / 2 wks'],
+       tip:'Crunch from your core, not your neck. Exhale as you crunch down. Hold 1 second at the bottom.'},
+      {id:'sat4',name:'Rotary torso',mach:'Rotary torso machine',sets:3,reps:'15/side',rest:45,
+       rec:['🏋️ 55–90 lbs (25–40 kg)','📈 Add 10 lbs / 2 wks'],
+       tip:'Rotate from your core. Keep hips completely still. Do all reps on one side before switching.'},
+      {id:'sat5',name:'Hip abduction',mach:'Hip abduction machine',sets:3,reps:'15',rest:45,
+       rec:['🏋️ 75–110 lbs (35–50 kg)','📈 Add 10 lbs / 2 wks'],
+       tip:'Sit tall. Push out as far as comfortable. Hold 1 second. Control the return — don\'t let it slam.'},
+      {id:'sat6',name:'Dumbbell shoulder press',mach:'Dumbbells',sets:3,reps:'10',rest:60,
+       rec:['🏋️ 22–30 lbs (10–14 kg) each dumbbell','📈 +5 lbs / 1–2 wks'],
+       tip:'Press directly overhead. Don\'t arch your lower back. Lower to ear level, press straight up. Keep core tight throughout.'},
+    ]},
+
+  sun:{title:'Full Rest',color:'rest',isRest:true,subtitle:'Complete rest — no gym',
+    time:'All day free',
+    tips:['No gym, no intense activity today — complete rest',
+      'Light walk with family or friends is fine and good for recovery',
+      'Eat protein + carbs to fully restore your muscles for Monday',
+      'Sleep by 10 pm — starting the week rested is as important as any workout',
+      'Review your week — did you beat last week\'s weights? Note what to improve']}
+};
+
+const DAYS = ['mon','tue','wed','thu','fri','sat','sun'];
+const DNAMES = {mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday'};
+const COLORS = {push:'f97316',pull:'22d3a5',legs:'a78bfa',full:'38bdf8',cardio:'f43f5e',rest:'64748b'};
+
+// ============================================================
+// STATE
+// ============================================================
+let curDay = 'mon';
+let timerInt = null, timerLeft = 0, timerTotal = 0;
+
+// ============================================================
+// STORAGE
+// ============================================================
+function dateStr(d){
+  d=d||new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function todayDayKey(){return DAYS[(new Date().getDay()+6)%7];}
+function getTheme(){return localStorage.getItem('theme')||'dark';}
+function getExReps(exId,def){return localStorage.getItem('ex:'+exId+':reps')||def;}
+function getExRest(exId,def){const v=localStorage.getItem('ex:'+exId+':rest');return v!==null?parseInt(v):def;}
+function saveExReps(exId,val){if(val!=='')localStorage.setItem('ex:'+exId+':reps',val);}
+function saveExRest(exId,val){if(val!=='')localStorage.setItem('ex:'+exId+':rest',val);}
+function getVib(){return localStorage.getItem('vib')!=='0';}
+function setKey(exId,set){return 'set:'+exId+':'+set+':'+dateStr();}
+function isSetDone(exId,set){return localStorage.getItem(setKey(exId,set))==='1';}
+function toggleSet(exId,set,el,dayKey,totalSets){
+  const k=setKey(exId,set);
+  const done=localStorage.getItem(k)==='1';
+  if(done){localStorage.removeItem(k);}
+  else{
+    localStorage.setItem(k,'1');
+    if(timerInt)clearTimer();
+    const ex=WK[dayKey].exercises.find(e=>e.id===exId);
+    const _er=getExRest(ex.id,ex.rest);
+    if(ex&&_er>0)startTimer(_er);
+  }
+  el.classList.toggle('done',!done);
+  updateCard(dayKey);
+  renderHome();
+}
+function wKey(exId){return 'w:'+exId;}
+function saveWeight(exId,val){if(val)localStorage.setItem(wKey(exId),val);}
+function getWeight(exId){return localStorage.getItem(wKey(exId))||'';}
+function isWkDone(dayKey,ds){
+  const d=WK[dayKey];
+  if(d.isRest)return false;
+  if(!d.exercises)return false;
+  const allSets=d.exercises.flatMap(e=>Array.from({length:e.sets},(_,i)=>'set:'+e.id+':'+(i+1)+':'+ds));
+  return allSets.length>0&&allSets.every(k=>localStorage.getItem(k)==='1');
+}
+function countDoneSets(dayKey){
+  const d=WK[dayKey];if(!d.exercises)return{done:0,total:0};
+  let done=0,total=0;
+  d.exercises.forEach(e=>{
+    for(let i=1;i<=e.sets;i++){total++;if(localStorage.getItem(setKey(e.id,i))==='1')done++;}
+  });
+  return{done,total};
+}
+function calcStreak(){
+  let streak=0;
+  const today=new Date();
+  for(let i=0;i<180;i++){
+    const d=new Date(today);d.setDate(d.getDate()-i);
+    const dk=DAYS[(d.getDay()+6)%7];
+    const ds=dateStr(d);
+    if(WK[dk].isRest)continue;
+    if(isWkDone(dk,ds))streak++;
+    else if(i>0)break;
+  }
+  return streak;
+}
+function countWeekDone(){
+  const today=new Date();
+  const dow=(today.getDay()+6)%7;
+  let done=0,total=0;
+  for(let i=0;i<=dow;i++){
+    const d=new Date(today);d.setDate(d.getDate()-i);
+    const dk=DAYS[(d.getDay()+6)%7];
+    if(!WK[dk].isRest){total++;if(isWkDone(dk,dateStr(d)))done++;}
+  }
+  return{done,total};
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('nb-'+name).classList.add('active');
+  if(name==='progress'){renderBWChart();renderCal();}
+  if(name==='workout'){document.getElementById('wkScroll').scrollTop=0;}
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+function startTimer(secs){
+  timerLeft=secs;timerTotal=secs;
+  clearInterval(timerInt);
+  updateTimerUI();
+  document.getElementById('timerBar').classList.add('on');
+  timerInt=setInterval(()=>{
+    timerLeft--;
+    if(timerLeft<=0){
+      clearTimer();
+      if(getVib()&&navigator.vibrate)navigator.vibrate([200,100,200]);
+    } else updateTimerUI();
+  },1000);
+}
+function updateTimerUI(){
+  const m=Math.floor(timerLeft/60),s=timerLeft%60;
+  document.getElementById('timerNum').textContent=m+':'+(s<10?'0':'')+s;
+  document.getElementById('timerFill').style.width=(timerLeft/timerTotal*100)+'%';
+}
+function clearTimer(){clearInterval(timerInt);timerInt=null;document.getElementById('timerBar').classList.remove('on');}
+function skipTimer(){clearTimer();}
+
+// ============================================================
+// HOME SCREEN
+// ============================================================
+function renderHome(){
+  const hr=new Date().getHours();
+  const greet=hr<12?'Good morning ☀️':hr<17?'Good afternoon 🌤':hr<21?'Good evening 🌙':'Good night 🌙';
+  document.getElementById('homeGreet').textContent=greet;
+  const streak=calcStreak();
+  const wk=countWeekDone();
+  const bw=localStorage.getItem('bw:'+dateStr())||localStorage.getItem('bw:latest')||'—';
+  document.getElementById('sStreak').textContent=streak;
+  document.getElementById('sWeek').textContent=wk.done+'/'+wk.total;
+  document.getElementById('sBW').textContent=bw==='—'?'—':parseFloat(bw).toFixed(1);
+  document.getElementById('homeTtl').textContent=todayDayKey()==='thu'||todayDayKey()==='sun'?'Rest day':'Today\'s session';
+
+  const dk=todayDayKey();
+  const d=WK[dk];
+  const color='var(--'+d.color+')';
+  const {done,total}=countDoneSets(dk);
+  const pct=total>0?Math.round(done/total*100):0;
+  const isDone=total>0&&done===total;
+
+  let card=`
+    <div class="tc-hdr">
+      <div class="tc-eye" style="color:${color}">${DNAMES[dk]}</div>
+      <div class="tc-title" style="color:${color}">${d.title}</div>
+      <div class="tc-sub">${d.subtitle||''}</div>
+      ${d.time?`<div class="tc-time">🕑 ${d.time}${d.warn?' · '+d.warn:''}</div>`:''}
+    </div>`;
+  if(!d.isRest&&total>0){
+    card+=`
+    <div class="prog-row">
+      <div class="prog-lr"><span class="prog-lbl">${isDone?'✅ Session complete!':'Session progress'}</span><span class="prog-cnt">${done}/${total} sets</span></div>
+      <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${color}"></div></div>
+    </div>
+    <button class="go-btn" style="background:${color}" onclick="showScreen('workout');renderDay('${dk}')">
+      ${isDone?'View workout →':done>0?'Continue →':'Start →'}
+    </button>`;
+  } else if(d.isRest){
+    card+=`<div style="padding:14px;font-size:13px;color:var(--muted);line-height:1.65;">Rest day — recover, stretch, and eat well. Come back strong tomorrow. 💤</div>`;
+  }
+  document.getElementById('todayCard').innerHTML=card;
+}
+
+// ============================================================
+// DAY SELECTOR
+// ============================================================
+function buildDaySel(){
+  const dnames={mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',sun:'Sun'};
+  const labels={mon:'Push',tue:'Pull',wed:'Legs',thu:'Rest',fri:'Full',sat:'Cardio',sun:'Rest'};
+  document.getElementById('daySel').innerHTML=DAYS.map(dk=>
+    `<div class="dchip" id="dc-${dk}" onclick="selectDay('${dk}')">${dnames[dk]} · ${labels[dk]}</div>`
+  ).join('');
+}
+function selectDay(dk){
+  curDay=dk;
+  document.querySelectorAll('.dchip').forEach(c=>c.classList.remove('active'));
+  const chip=document.getElementById('dc-'+dk);
+  if(chip){chip.classList.add('active');chip.scrollIntoView({inline:'center',block:'nearest'});}
+  renderDay(dk);
+  document.getElementById('wkScroll').scrollTop=0;
+}
+
+// ============================================================
+// RENDER DAY
+// ============================================================
+function renderDay(dk){
+  const d=WK[dk];
+  const color='var(--'+d.color+')';
+  let html='';
+
+  // Topbar
+  html+=`<div class="topbar">
+    <div class="tb-row">
+      <div>
+        <div class="tb-day">${DNAMES[dk]}</div>
+        <div class="tb-title" style="color:${color}">${d.title}</div>
+      </div>
+      <span class="tb-badge bg-${d.color}">${d.subtitle||''}</span>
+    </div>
+    <div class="tb-meta">
+      ${d.time?`<span class="chip">🕑 ${d.time}</span>`:''}
+
+      ${d.warn?`<span class="chip c-cardio">${d.warn}</span>`:''}
+    </div>
+  </div>`;
+
+  if(d.isRest){
+    html+=`<div class="rest-view">
+      <div class="rest-emoji">😴</div>
+      <div class="rest-title" style="color:${color}">Rest Day</div>
+      <div class="rest-intro">Your muscles grow during rest, not during the workout. This day is as important as any training session.</div>
+      ${d.tips.map(t=>`<div class="rest-tip"><span class="rest-arr">›</span><span>${t}</span></div>`).join('')}
+    </div>`;
+    document.getElementById('wkContent').innerHTML=html;
+    return;
+  }
+
+  // Sets done counter (no duration display)
+  if(d.exercises){
+    html+=`<div class="dur-row">
+      <div class="dur-b"><div class="dur-v c-green" id="dv-done-${dk}">—</div><div class="dur-l">Sets done</div></div>
+    </div>`;
+  }
+
+  // Warmup
+  if(d.warmup){
+    html+=`<div class="warmup">
+      <span style="font-size:20px;flex-shrink:0;">🔥</span>
+      <div class="warmup-inner">
+        <strong>Warm-up:</strong> ${d.warmup}
+        ${d.warmupSettings?`<div class="warmup-settings">${d.warmupSettings.map(s=>`<span class="wsetting">${s}</span>`).join('')}</div>`:''}
+      </div>
+    </div>`;
+  }
+
+  // Exercises
+  if(d.exercises){
+    html+=`<div class="sec"><div class="sec-lbl">Exercises</div><div class="ex-list" id="exlist-${dk}">`;
+    d.exercises.forEach(ex=>{
+      const exReps=getExReps(ex.id,ex.reps);
+      const exRest=getExRest(ex.id,ex.rest);
+      const doneSets=Array.from({length:ex.sets},(_,i)=>isSetDone(ex.id,i+1));
+      const allDone=doneSets.every(Boolean);
+      const savedW=getWeight(ex.id);
+      html+=`<div class="ex-card">
+        <div class="ex-accent" style="background:${color}"></div>
+        <div class="ex-hdr">
+          <div>
+            <div class="ex-name">${allDone?'✅ ':''} ${ex.name}</div>
+            <div class="ex-mach">${ex.mach}</div>
+          </div>
+          <button class="tip-btn" id="tipbtn-${ex.id}" onclick="toggleTip('${ex.id}')">💡</button>
+        </div>
+        <div class="sets-row">
+          <div class="sets-grp">
+            ${Array.from({length:ex.sets},(_,i)=>`<button class="set-btn${doneSets[i]?' done':''}" id="sb-${ex.id}-${i+1}" onclick="toggleSet('${ex.id}',${i+1},this,'${dk}',${ex.sets})">${i+1}</button>`).join('')}
+          </div>
+          <span class="rest-tag">⏱ <input class="rest-input" type="number" value="${exRest}" min="0" max="300" title="Edit rest time (seconds)" onchange="saveExRest('${ex.id}',this.value)" onclick="this.select()">s rest</span>
+        </div>
+        ${ex.rec?`<div class="rec-row">
+          <span class="rec-label">Rec</span>
+          <div class="rec-tags">${ex.rec.map(r=>`<span class="rec-tag">${r}</span>`).join('<span style="color:var(--dim);font-size:10px">·</span>')}</div>
+        </div>`:''}
+        <div class="ex-bot">
+          <span class="reps-lbl">${ex.sets} × <input class="reps-input" type="text" value="${exReps}" title="Edit reps" onchange="saveExReps('${ex.id}',this.value)" onclick="this.select()"> reps</span>
+          <div class="w-wrap">
+            <input class="w-input" type="number" placeholder="0" value="${savedW}"
+              id="wi-${ex.id}" min="0" max="2000" step="1"
+              onchange="saveWeight('${ex.id}',this.value);showSaved('ws-${ex.id}');(function(){const kg=document.getElementById('wkg-${ex.id}');if(kg)kg.textContent=this.value?lbsToKg(parseFloat(this.value))+' kg':'';}).call(this)">
+            <span class="w-unit">lbs</span>
+            <span class="w-kg" id="wkg-${ex.id}">${savedW?lbsToKg(parseFloat(savedW))+' kg':''}</span>
+            <span class="w-saved" id="ws-${ex.id}" style="display:none">saved!</span>
+          </div>
+        </div>
+        <div class="tip-body" id="tipbody-${ex.id}">${ex.tip||''}</div>
+      </div>`;
+    });
+    html+=`</div></div>`;
+  }
+
+  // Cardio block
+  if(d.cardio){
+    html+=`<div class="cardio-card bg-${d.color}" style="border-color:rgba(0,0,0,0.12)">
+      <span class="cardio-ic">${d.cardio.ic}</span>
+      <div class="cardio-content">
+        <div class="cardio-lbl">Cardio finisher</div>
+        <div class="cardio-txt">${d.cardio.txt}</div>
+        ${d.cardio.settings?`<div class="cardio-settings">${d.cardio.settings.map(s=>`<span class="csetting">${s}</span>`).join('')}</div>`:''}
+      </div>
+    </div>`;
+  }
+
+  // Complete button
+  if(d.exercises){
+    const {done,total}=countDoneSets(dk);
+    const isDone=total>0&&done===total;
+    html+=`<button class="comp-btn ${isDone?'comp-done':''}" id="compbtn-${dk}"
+      style="${isDone?'':'background:'+color+';color:#fff'}"
+      onclick="markAllSets('${dk}')">${isDone?'✅ Session complete!':'Mark all complete'}</button>`;
+  }
+
+  html+=`<div style="height:4px;"></div>`;
+  document.getElementById('wkContent').innerHTML=html;
+  updateCard(dk);
+}
+
+function updateCard(dk){
+  const {done,total}=countDoneSets(dk);
+  const v=document.getElementById('dv-done-'+dk);
+  if(v)v.textContent=done+'/'+total;
+  const btn=document.getElementById('compbtn-'+dk);
+  if(btn&&total>0){
+    const isDone=done===total;
+    btn.className='comp-btn'+(isDone?' comp-done':'');
+    btn.style.background=isDone?'':'var(--'+WK[dk].color+')';
+    btn.style.color=isDone?'':'#fff';
+    btn.textContent=isDone?'✅ Session complete!':'Mark all complete';
+  }
+}
+
+function markAllSets(dk){
+  const d=WK[dk];if(!d.exercises)return;
+  d.exercises.forEach(e=>{
+    for(let i=1;i<=e.sets;i++){
+      localStorage.setItem(setKey(e.id,i),'1');
+      const btn=document.getElementById('sb-'+e.id+'-'+i);
+      if(btn)btn.classList.add('done');
+    }
+  });
+  updateCard(dk);renderHome();
+}
+function showSaved(id){
+  const el=document.getElementById(id);if(!el)return;
+  el.style.display='block';setTimeout(()=>el.style.display='none',1200);
+}
+function toggleTip(exId){
+  const body=document.getElementById('tipbody-'+exId);
+  const btn=document.getElementById('tipbtn-'+exId);
+  if(!body)return;
+  body.classList.toggle('open');
+  if(btn)btn.classList.toggle('open',body.classList.contains('open'));
+}
+
+// ============================================================
+// BODY WEIGHT
+// ============================================================
+function lbsToKg(lbs){return lbs?(lbs/2.2046).toFixed(1):'';}
+function kgToLbs(kg){return kg?(kg*2.2046).toFixed(1):'';}
+function saveBodyWeight(){
+  const v=parseFloat(document.getElementById('bwIn').value);
+  if(!v||isNaN(v))return;
+  const ds=dateStr();
+  localStorage.setItem('bw:'+ds,v.toFixed(1));
+  localStorage.setItem('bw:latest',v.toFixed(1));
+  document.getElementById('sBW').textContent=v.toFixed(1);
+  renderBWChart();
+}
+function renderBWChart(){
+  const keys=[];
+  for(let k in localStorage){if(k.startsWith('bw:')&&k!=='bw:latest')keys.push(k);}
+  keys.sort();
+  if(keys.length<2){document.getElementById('bwChart').innerHTML=`<div class="chart-empty">Log at least 2 days to see your chart 📈</div>`;return;}
+  const ds=keys.map(k=>k.slice(3));
+  const ws=keys.map(k=>parseFloat(localStorage.getItem(k)));
+  const W=340,H=110,pad={t:10,r:10,b:20,l:30};
+  const minW=Math.min(...ws)-1,maxW=Math.max(...ws)+1;
+  const xS=(i)=>pad.l+i*(W-pad.l-pad.r)/(ds.length-1);
+  const yS=(w)=>pad.t+(H-pad.t-pad.b)*(maxW-w)/(maxW-minW);
+  const pts=ws.map((w,i)=>({x:xS(i),y:yS(w)}));
+  const pd=pts.map((p,i)=>(i?'L':'M')+p.x.toFixed(1)+' '+p.y.toFixed(1)).join(' ');
+  const ad=pd+` L${pts[pts.length-1].x.toFixed(1)} ${H-pad.b} L${pts[0].x.toFixed(1)} ${H-pad.b} Z`;
+  const fmt=s=>{const p=s.split('-');return p[1]+'/'+p[2];};
+  const startLine=pts[0]?`<line x1="${pts[0].x.toFixed(1)}" y1="${pad.t}" x2="${pts[0].x.toFixed(1)}" y2="${H-pad.b}" stroke="rgba(240,240,248,.08)" stroke-width="1"/>`:'' ;
+  document.getElementById('bwChart').innerHTML=`
+  <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;overflow:visible">
+    <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#22d3a5" stop-opacity=".25"/>
+      <stop offset="100%" stop-color="#22d3a5" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${startLine}
+    <path d="${ad}" fill="url(#ag)"/>
+    <path d="${pd}" fill="none" stroke="#22d3a5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    ${pts.map(p=>`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="#22d3a5"/>`).join('')}
+    <text x="${pts[0].x.toFixed(1)}" y="${H-3}" text-anchor="middle" font-size="9" fill="rgba(240,240,248,.35)">${fmt(ds[0])}</text>
+    <text x="${pts[pts.length-1].x.toFixed(1)}" y="${H-3}" text-anchor="middle" font-size="9" fill="rgba(240,240,248,.35)">${fmt(ds[ds.length-1])}</text>
+  </svg>
+  <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:6px;">
+    Latest: <strong>${ws[ws.length-1]} kg</strong> · Lost: <strong style="color:var(--green)">${(96.4-ws[ws.length-1]).toFixed(1)} kg</strong> since start
+  </div>`;
+}
+
+// ============================================================
+// STREAK CALENDAR
+// ============================================================
+function renderCal(){
+  const now=new Date(),yr=now.getFullYear(),mo=now.getMonth(),tod=now.getDate();
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('calMonth').textContent=months[mo]+' '+yr;
+  document.getElementById('calStreak').textContent='🔥 '+calcStreak()+' day streak';
+  const first=new Date(yr,mo,1).getDay();
+  const dim=new Date(yr,mo+1,0).getDate();
+  const offset=(first+6)%7;
+  let html=['M','T','W','T','F','S','S'].map(d=>`<div class="cal-dh">${d}</div>`).join('');
+  for(let i=0;i<offset;i++)html+=`<div></div>`;
+  for(let d=1;d<=dim;d++){
+    const date=new Date(yr,mo,d);
+    const dow=date.getDay();
+    const dk=DAYS[(dow+6)%7];
+    const ds=yr+'-'+String(mo+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const isRest=WK[dk].isRest;
+    const done=isWkDone(dk,ds);
+    const isToday=d===tod;
+    let cls='cal-d';
+    if(done)cls+=' done';
+    else if(isRest)cls+=' rday';
+    if(isToday)cls+=' today';
+    html+=`<div class="${cls}">${d}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML=html;
+}
+
+// ============================================================
+// TIPS
+// ============================================================
+function renderTips(){
+  const tips=[
+    {c:'push',t:'Sleep 8–9 hrs every night',b:'Growth hormone releases during deep sleep — this is how you grow taller and build muscle at the same time.'},
+    {c:'pull',t:'Protein at every meal',b:'Aim for 150–190g daily. Eggs, chicken, fish, beans, milk. Preserves muscle while you lose fat.'},
+    {c:'legs',t:'Cut the obvious junk first',b:'Soft drinks, fried food, late-night snacks. Just this alone can account for 3–5 kg over 4 months.'},
+    {c:'full',t:'Add weight every 1–2 weeks',b:'Write your lifts down. Progressive overload is what builds real strength over time.'},
+    {c:'cardio',t:'Drink 2.5–3 litres of water daily',b:'Dehydration kills workout performance. Bring a bottle to every single session.'},
+  ];
+  document.getElementById('tipsList').innerHTML=tips.map(t=>
+    `<div class="tip-card"><div class="tip-t c-${t.c}">${t.t}</div><div class="tip-b">${t.b}</div></div>`
+  ).join('');
+}
+
+// ============================================================
+// THEME + VIBRATE
+// ============================================================
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme',theme);
+  document.getElementById('themeColorMeta').content=theme==='light'?'#f0f0f8':'#0a0a10';
+  const tog=document.getElementById('togTheme');
+  if(tog)tog.classList.toggle('on',theme==='light');
+  localStorage.setItem('theme',theme);
+}
+function toggleTheme(){applyTheme(getTheme()==='dark'?'light':'dark');}
+function toggleVibrate(){
+  const v=getVib();
+  localStorage.setItem('vib',v?'0':'1');
+  document.getElementById('togVib').classList.toggle('on',!v);
+}
+
+// ============================================================
+// CLEAR DATA
+// ============================================================
+function clearData(){
+  if(confirm('Clear all saved data? This removes your logged sets, weights, and body weight entries.')){
+    localStorage.clear();applyTheme('dark');
+    document.getElementById('togVib').classList.add('on');
+    renderHome();alert('All data cleared.');
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init(){
+  applyTheme(getTheme());
+  document.getElementById('togVib').classList.toggle('on',getVib());
+
+  buildDaySel();
+  curDay=todayDayKey();
+  renderDay(curDay);
+  const chip=document.getElementById('dc-'+curDay);
+  if(chip){chip.classList.add('active');chip.scrollIntoView({inline:'center',block:'nearest'});}
+  renderHome();
+  renderTips();
+
+  // PWA manifest
+  (function(){
+    const icon='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 192 192\'><rect width=\'192\' height=\'192\' rx=\'40\' fill=\'%230a0a10\'/><text x=\'96\' y=\'140\' text-anchor=\'middle\' font-size=\'115\'>💪</text></svg>';
+    const m={name:'My Workout',short_name:'Workout',description:'6-day Push · Pull · Legs · Full Body · Cardio tracker',
+      start_url:location.href,display:'standalone',orientation:'portrait-primary',
+      background_color:'#0a0a10',theme_color:'#0a0a10',
+      icons:[{src:icon,sizes:'192x192',type:'image/svg+xml'},{src:icon,sizes:'512x512',type:'image/svg+xml'}]};
+    const blob=new Blob([JSON.stringify(m)],{type:'application/manifest+json'});
+    const url=URL.createObjectURL(blob);
+    let l=document.querySelector('link[rel="manifest"]');
+    if(!l){l=document.createElement('link');l.rel='manifest';document.head.appendChild(l);}
+    l.href=url;
+  })();
+
+  // Service worker disabled: removed to avoid CDN/APK URL errors.
+}
+
+init();
+</script>
+</body>
+</html>
